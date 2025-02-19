@@ -1,8 +1,5 @@
-/src
-/test
 .editorconfig
 Jenkinsfile
-tsconfig.json
 .nyc_output/
 coverage/
 .vscode/
