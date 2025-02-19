@@ -82,7 +82,7 @@
     "compile:esm": "tsc -p ./tsconfig.esm.json",
     "check-dependencies": "node ./scripts/check-dependencies.js",
     "pull-remote": "git pull https://github.com/redhat-developer/yaml-language-server.git main",
-    "postinstall": "tsc -p ./tsconfig.esm.json"
+    "prepare": "tsc -p ./tsconfig.esm.json"
   },
   "nyc": {
     "extension": [
