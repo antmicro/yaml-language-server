@@ -154,6 +154,9 @@ export class YAMLHover {
               markdownDescription = removePipe(markdownDescription);
             }
             type = s.schema.type?.toString?.();
+            if (s.schema.enum) {
+              type = 'enum';
+            }
             if (s.schema.examples) {
               s.schema.examples.forEach((example) => {
                 markdownExamples.push(stringifyYAML(example, null, 2));
