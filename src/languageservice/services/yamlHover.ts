@@ -109,7 +109,7 @@ export class YAMLHover {
       if (schema && node && !schema.errors.length) {
         const matchingSchemas = doc.getMatchingSchemas(schema.schema, node.offset);
 
-        let name: string | undefined = undefined;
+        let title: string | undefined = undefined;
         let markdownDescription: string | undefined = undefined;
         let markdownEnumDescriptions: string[] = [];
         let type: string | undefined = undefined;
@@ -118,7 +118,10 @@ export class YAMLHover {
 
         matchingSchemas.every((s) => {
           if ((s.node === node || (node.type === 'property' && node.valueNode === s.node)) && !s.inverted && s.schema) {
-            name = s.schema.title ?? s.node.location;
+            if (node.parent?.type === 'property') {
+              // @ts-ignore
+              title = node.parent.internalNode.key.source;
+            }
             markdownDescription = markdownDescription || s.schema.markdownDescription || this.toMarkdown(s.schema.description);
             if (s.schema.enum) {
               if (s.schema.markdownEnumDescriptions) {
@@ -140,20 +143,25 @@ export class YAMLHover {
             }
             if (s.schema.anyOf && isAllSchemasMatched(node, matchingSchemas, s.schema)) {
               //if append title and description of all matched schemas on hover
-              name = '';
+              title = '';
               markdownDescription = s.schema.description ? s.schema.description + '\n' : '';
               s.schema.anyOf.forEach((childSchema: JSONSchema, index: number) => {
-                name += childSchema.title || s.schema.closestTitle || '';
+                title += childSchema.title || s.schema.closestTitle || '';
                 markdownDescription += childSchema.markdownDescription || this.toMarkdown(childSchema.description) || '';
                 if (index !== s.schema.anyOf.length - 1) {
-                  name += ' || ';
+                  title += ' || ';
                   markdownDescription += ' || ';
                 }
               });
-              name = removePipe(name);
+              title = removePipe(title);
               markdownDescription = removePipe(markdownDescription);
             }
-            type = s.schema.type?.toString?.();
+            if (s.schema.anyOf) {
+              // @ts-ignore
+              type = s.schema.anyOf.map(({ type }) => type).join(' || ');
+            } else {
+              type = type ?? s.schema.type?.toString?.();
+            }
             if (s.schema.enum) {
               type = 'enum';
             }
@@ -166,8 +174,8 @@ export class YAMLHover {
           return true;
         });
         let result = '';
-        if (name) {
-          result = '#### ' + this.toMarkdown(name);
+        if (title) {
+          result = '#### ' + this.toMarkdown(title);
         }
         if (markdownDescription) {
           result = ensureLineBreak(result);
@@ -281,4 +289,5 @@ function isAllSchemasMatched(node: ASTNode, matchingSchemas: IApplicableSchema[]
   }
   return count === schema.anyOf.length;
 }
+
 
