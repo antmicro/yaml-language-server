@@ -112,6 +112,7 @@ export class YAMLHover {
         let title: string | undefined = undefined;
         let markdownDescription: string | undefined = undefined;
         let markdownEnumDescriptions: string[] = [];
+        let type: string | undefined = undefined;
         const markdownExamples: string[] = [];
         const markdownEnums: markdownEnum[] = [];
 
@@ -152,6 +153,7 @@ export class YAMLHover {
               title = removePipe(title);
               markdownDescription = removePipe(markdownDescription);
             }
+            type = s.schema.type?.toString?.();
             if (s.schema.examples) {
               s.schema.examples.forEach((example) => {
                 markdownExamples.push(stringifyYAML(example, null, 2));
@@ -167,6 +169,10 @@ export class YAMLHover {
         if (markdownDescription) {
           result = ensureLineBreak(result);
           result += markdownDescription;
+        }
+        if (type) {
+          result = ensureLineBreak(result);
+          result += `Type: ${type}`;
         }
         if (markdownEnums.length !== 0) {
           result = ensureLineBreak(result);
@@ -272,3 +278,4 @@ function isAllSchemasMatched(node: ASTNode, matchingSchemas: IApplicableSchema[]
   }
   return count === schema.anyOf.length;
 }
+
