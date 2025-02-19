@@ -109,7 +109,7 @@ export class YAMLHover {
       if (schema && node && !schema.errors.length) {
         const matchingSchemas = doc.getMatchingSchemas(schema.schema, node.offset);
 
-        let title: string | undefined = undefined;
+        let name: string | undefined = undefined;
         let markdownDescription: string | undefined = undefined;
         let markdownEnumDescriptions: string[] = [];
         let type: string | undefined = undefined;
@@ -118,7 +118,7 @@ export class YAMLHover {
 
         matchingSchemas.every((s) => {
           if ((s.node === node || (node.type === 'property' && node.valueNode === s.node)) && !s.inverted && s.schema) {
-            title = title || s.schema.title || s.schema.closestTitle;
+            name = s.schema.title ?? s.node.location;
             markdownDescription = markdownDescription || s.schema.markdownDescription || this.toMarkdown(s.schema.description);
             if (s.schema.enum) {
               if (s.schema.markdownEnumDescriptions) {
@@ -140,17 +140,17 @@ export class YAMLHover {
             }
             if (s.schema.anyOf && isAllSchemasMatched(node, matchingSchemas, s.schema)) {
               //if append title and description of all matched schemas on hover
-              title = '';
+              name = '';
               markdownDescription = s.schema.description ? s.schema.description + '\n' : '';
               s.schema.anyOf.forEach((childSchema: JSONSchema, index: number) => {
-                title += childSchema.title || s.schema.closestTitle || '';
+                name += childSchema.title || s.schema.closestTitle || '';
                 markdownDescription += childSchema.markdownDescription || this.toMarkdown(childSchema.description) || '';
                 if (index !== s.schema.anyOf.length - 1) {
-                  title += ' || ';
+                  name += ' || ';
                   markdownDescription += ' || ';
                 }
               });
-              title = removePipe(title);
+              name = removePipe(name);
               markdownDescription = removePipe(markdownDescription);
             }
             type = s.schema.type?.toString?.();
@@ -166,8 +166,8 @@ export class YAMLHover {
           return true;
         });
         let result = '';
-        if (title) {
-          result = '#### ' + this.toMarkdown(title);
+        if (name) {
+          result = '#### ' + this.toMarkdown(name);
         }
         if (markdownDescription) {
           result = ensureLineBreak(result);
