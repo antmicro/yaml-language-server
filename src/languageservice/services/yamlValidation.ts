@@ -4,7 +4,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Diagnostic, Position } from 'vscode-languageserver-types';
+import { Diagnostic, Position, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
 import { LanguageSettings } from '../yamlLanguageService';
 import { YAMLDocument, YamlVersion, SingleYAMLDocument } from '../parser/yamlParser07';
 import { YAMLSchemaService } from './yamlSchemaService';
@@ -106,6 +106,19 @@ export class YAMLValidation {
 
         validationResult.push(...validation);
         validationResult.push(...this.runAdditionalValidators(textDocument, currentYAMLDoc));
+
+        // Check for empty document
+        const empty = currentYAMLDoc.root === null;
+        if (empty) {
+          validationResult.push(
+            Diagnostic.create(
+              Range.create(Position.create(1, 0), Position.create(1, 0)),
+              'Empty document',
+              DiagnosticSeverity.Error
+            )
+          );
+        }
+
         index++;
       }
     } catch (err) {
